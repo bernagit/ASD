@@ -38,11 +38,12 @@ def read_file(folder, filename):
     line = ';;;'
     with open(file, 'r') as f:
         lines = f.readlines()
-        while line.startswith(';;;'):
-            line = lines.pop(0)
         
         matrix = []
         for line in lines:
+            if line.startswith(';;;'):
+                continue
+
             line = line.replace('-', '')
             line = line.strip()
             matrix.append([bool(int(x)) for x in line.split()])
@@ -56,6 +57,7 @@ def main():
     benchmarks = get_benchmark_files()
 
     for folder, filename in benchmarks:
+        break
         start = time.time()
         matrix = read_file(folder, filename)
 
@@ -68,6 +70,15 @@ def main():
 
         result = Result(folder, filename, end - start, mhs)
         result.save()
+
+    # matrix = np.array([[1, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 0], [1, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=bool)
+    # matrix = np.array([[0, 0, 1, 1, 0], [1, 1, 0, 1, 0], [0, 1, 1, 1, 1]], dtype=bool)
+    matrix = read_file('benchmarks2', 'c7552.325.matrix')
+
+    # matrix = matrix.transpose()
+    mhs = MHS(matrix)
+    for x in mhs:
+        print(x)
 
 
 if __name__ == '__main__':
