@@ -22,9 +22,13 @@ class Node():
             self.vector = np.zeros(len(matrix), dtype=bool)
 
     def lm(self):
-        # return index of leftmost True in vector
+        # return index of leftmost True in value
+        for i in range(len(self.value)):
+            if self.value[i] == True:
+                return i
 
-        return np.argmax(self.value)
+        return -1
+        # return np.argmax(self.value)
     
     def propagate(self, h):
         """

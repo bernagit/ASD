@@ -3,8 +3,20 @@ import time
 import numpy as np
 from algorithm import MHS
 
+import signal
+import sys
+
 BANCHMARK_FOLDERS = ['./benchmarks1', './benchmarks2']
 
+solutions = []
+def signal_handler(sig, frame):
+    """Handle Ctrl+C (SIGINT) signal."""
+    print("\nCtrl+C detected! Cleaning up...")
+    print(solutions)
+    
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 class Result():
     
@@ -73,11 +85,10 @@ def main():
 
     # matrix = np.array([[1, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 0], [1, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=bool)
     # matrix = np.array([[0, 0, 1, 1, 0], [1, 1, 0, 1, 0], [0, 1, 1, 1, 1]], dtype=bool)
-    matrix = read_file('benchmarks2', 'c7552.325.matrix')
+    matrix = read_file('benchmarks1', '74L85.021.matrix')
 
-    # matrix = matrix.transpose()
-    mhs = MHS(matrix)
-    for x in mhs:
+    mhs = MHS(matrix, delta=solutions)
+    for x in solutions:
         print(x)
 
 

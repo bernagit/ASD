@@ -34,19 +34,20 @@ def generate_children(h: Node, matrix: np.ndarray):
 
         h1.propagate(h)
 
-        hi = h.initial(h1, matrix)
-        hf = h.final(h1, matrix)
-        cont = 0
-        while hp <= hi and hp >= hf:
-            if hp.distance(h1) == 1 and hp.distance(h) == 2:
-                h1.propagate(hp)
-                cont += 1
+        children.append(h1)
+        # hi = h.initial(h1, matrix)
+        # hf = h.final(h1, matrix)
+        # cont = 0
+        # while hp <= hi and hp >= hf:
+        #     if hp.distance(h1) == 1 and hp.distance(h) == 2:
+        #         h1.propagate(hp)
+        #         cont += 1
             
-            pos += 1
-            hp = current[pos]
+        #     pos += 1
+        #     hp = current[pos]
         
-        if cont == h.level:
-            children.append(h1)
+        # if cont == h.level:
+        #     children.append(h1)
     
     return children
 
@@ -61,60 +62,13 @@ def parse_matrix(matrix):
             deleted_columns_index.append(i)
 
     print(f'Start columns: {M} - End columns: {matrix.shape[1]}')
+    matrix_to_print = [[0 if x == False else 1 for x in row] for row in matrix]
+    
+    for row in matrix_to_print:
+        print(row)
 
     return matrix, deleted_columns_index
 
-
-# def MHS(matrix: np.ndarray):
-#     """
-#     Minimum Hypothesis Search algorithm
-#     """
-
-#     matrix, deleted_columns_index = parse_matrix(matrix)
-
-#     h0 = Node([False] * len(matrix[0]))
-#     h0.update_level()
-#     h0._set_fields(matrix)
-
-#     global current
-#     # current = deque([h0])
-#     current = [h0]
-#     delta = []
-
-#     while len(current) > 0:
-#         next = []
-
-#         i = 0
-#         n = len(current)
-#         while i < n:
-#             h = current[i]
-#             if check(h):
-#                 delta.append(h)
-#                 current.pop(i)
-#                 i -= 1
-#                 n -= 1
-
-#             elif h.level == 0:
-#                 next.extend(generate_children(h, matrix))
-#             elif h.lm() != 0:
-#                 hs = h.global_initial(matrix)
-#                 tmp = [c for c in current if c <= hs]
-
-#                 i -= (len(current) - len(tmp))
-#                 n = len(tmp)
-#                 current = tmp
-#                 hp = current[0]
-
-#                 if hp != h:
-#                     next.extend(generate_children(h, matrix))
-#                     next.sort(reverse=True)
-                
-#             i += 1
-#         current = next
-
-    
-
-#     return delta
 
 def check_solution(matrix, solution):
     tmp = np.array([False] * matrix.shape[0], dtype=bool)
@@ -128,10 +82,18 @@ def check_solution(matrix, solution):
     else:
         print('NOT correct solution!')
 
-def MHS(matrix: np.ndarray):
+
+def permute_matrix_columns(matrix):
+    col_sums = matrix.sum(axis=0)
+    sorted_indices = np.argsort(col_sums)[::-1]
+    matrix = matrix[:, sorted_indices]
+
+
+def MHS(matrix: np.ndarray, delta):
     """
     Minimum Hypothesis Search algorithm
     """
+    # permute_matrix_columns(matrix)
 
     matrix, deleted_columns_index = parse_matrix(matrix)
 
@@ -140,18 +102,19 @@ def MHS(matrix: np.ndarray):
     h0._set_fields(matrix)
 
     global current
-    # current = deque([h0])
     current = [h0]
-    delta = []
+    # delta = []
 
     while len(current) > 0:
         next = []
 
         i = 0
         n = len(current)
+        print(current[0].level, n)
         while i < n:
             h = current[i]
             if check(h):
+                print('Found solution')
                 delta.append(h.value)
                 current.pop(i)
                 i -= 1
@@ -169,7 +132,8 @@ def MHS(matrix: np.ndarray):
                 hp = current[0]
 
                 if hp != h:
-                    next.extend(generate_children(h, matrix))
+                    children = generate_children(h, matrix)
+                    next.extend(children)
                     next.sort(reverse=True)
                 
             i += 1
@@ -179,6 +143,9 @@ def MHS(matrix: np.ndarray):
         check_solution(matrix, sol)
 
     delta = np.array(delta)
+    if len(delta) == 0:
+        return delta
+    
     for i in deleted_columns_index[::-1]:
         new_column = np.array([False] * delta.shape[0], dtype=bool)
         delta = np.insert(delta, i, new_column, axis=1)
