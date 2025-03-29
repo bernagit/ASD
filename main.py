@@ -84,8 +84,8 @@ def main():
         result.save()
 
     # matrix = np.array([[1, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 0], [1, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=bool)
-    # matrix = np.array([[0, 0, 1, 1, 0], [1, 1, 0, 1, 0], [0, 1, 1, 1, 1]], dtype=bool)
-    matrix = read_file('benchmarks1', '74L85.021.matrix')
+    matrix = np.array([[0, 0, 0, 1, 1], [1, 1, 0, 0, 1], [0, 1, 1, 1, 1]], dtype=bool)
+    # matrix = read_file('benchmarks1', '74L85.021.matrix')
 
     mhs = MHS(matrix, delta=solutions)
     for x in solutions:

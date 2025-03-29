@@ -34,20 +34,27 @@ def generate_children(h: Node, matrix: np.ndarray):
 
         h1.propagate(h)
 
-        children.append(h1)
-        # hi = h.initial(h1, matrix)
-        # hf = h.final(h1, matrix)
-        # cont = 0
-        # while hp <= hi and hp >= hf:
-        #     if hp.distance(h1) == 1 and hp.distance(h) == 2:
-        #         h1.propagate(hp)
-        #         cont += 1
+        # children.append(h1)
+        hi = h.initial(h1, matrix)
+        hf = h.final(h1, matrix)
+
+        try:
+            pos = current.index(hi)
+        except:
+            pos = 0
+        hp = current[pos]
+
+        cont = 0
+        while hp <= hi and hp >= hf:
+            if hp.distance(h1) == 1 and hp.distance(h) == 2:
+                h1.propagate(hp)
+                cont += 1
             
-        #     pos += 1
-        #     hp = current[pos]
+            pos += 1
+            hp = current[pos]
         
-        # if cont == h.level:
-        #     children.append(h1)
+        if cont == h.level:
+            children.append(h1)
     
     return children
 
