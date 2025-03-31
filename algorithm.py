@@ -1,160 +1,164 @@
 import numpy as np
-from collections import deque
 from node import Node
+import time
+import tracemalloc
+
+class Solver:
+    def __init__(self, matrix, instance_filename):
+        self.matrix = matrix
+        self.instance_filename = instance_filename
+        self.current_level = 0
+
+    def check_solution(self, solution):
+        tmp = np.array([False] * self.matrix.shape[0], dtype=bool)
+        for i in range(len(solution)):
+            if solution[i]:
+                tmp = np.logical_or(tmp, self.matrix[:,i])
+
+        if np.sum(tmp) == self.matrix.shape[0]:
+            print('Correct solution!')
+
+        else:
+            print('NOT correct solution!')
 
 
-def check(h: Node):
-    """
-    Check if hypothesis h is valid
-    """
-    return h.vector.sum() == len(h.vector)
+    def permute_matrix_columns(matrix):
+        # col_sums = matrix.sum(axis=0)
+        # sorted_indices = np.argsort(col_sums)[::-1]
+        # matrix = matrix[:, sorted_indices]
+        pass
 
+    def parse_matrix(self):
+        self.deleted_columns_index = []
+        M = self.matrix.shape[1]
+        for i in range(self.matrix.shape[1] - 1, 0, -1):
+            column = self.matrix[:, i].reshape(-1)
+            if np.sum(column) == 0:
+                self.matrix = np.delete(self.matrix, i, 1)
+                self.deleted_columns_index.append(i)
 
-def generate_children(h: Node, matrix: np.ndarray):
-    """
-    Generate children of hypothesis h
-    """
-    children = []
-    if h.level == 0:
-        for i in range(len(h.value)):
-            hp = Node(h.value)
-            hp.value[i] = True
-            hp.update_level()
-            hp._set_fields(matrix)
-            children.append(hp)
-        return children
-    
-    hp = current[0]
-    pos = 0
-    for i in range(h.lm()):
-        h1 = Node(h.value)
-        h1.value[i] = True
-        h1.update_level()
-        h1._set_fields(matrix)
-
-        h1.propagate(h)
-
-        # children.append(h1)
-        hi = h.initial(h1, matrix)
-        hf = h.final(h1, matrix)
-
-        try:
-            pos = current.index(hi)
-        except:
-            pos = 0
-        hp = current[pos]
-
-        cont = 0
-        while hp <= hi and hp >= hf:
-            if hp.distance(h1) == 1 and hp.distance(h) == 2:
-                h1.propagate(hp)
-                cont += 1
-            
-            pos += 1
-            hp = current[pos]
+        print(f'Start columns: {M} - End columns: {self.matrix.shape[1]}')
+        matrix_to_print = [[0 if x == False else 1 for x in row] for row in self.matrix]
         
-        if cont == h.level:
-            children.append(h1)
-    
-    return children
+        for row in matrix_to_print:
+            print(row)
 
+    def add_deleted_columns_to_solution(self, solution):
+        solution = solution.reshape(1, self.matrix.shape[1])
+        for i in self.deleted_columns_index[::-1]:
+            solution = np.insert(solution, i, [False], axis=1)
 
-def parse_matrix(matrix):
-    deleted_columns_index = []
-    M = matrix.shape[1]
-    for i in range(matrix.shape[1] - 1, 0, -1):
-        column = matrix[:, i].reshape(-1)
-        if np.sum(column) == 0:
-            matrix = np.delete(matrix, i, 1)
-            deleted_columns_index.append(i)
+        solution = solution.reshape(-1)
+        return solution
 
-    print(f'Start columns: {M} - End columns: {matrix.shape[1]}')
-    matrix_to_print = [[0 if x == False else 1 for x in row] for row in matrix]
-    
-    for row in matrix_to_print:
-        print(row)
+    def get_used_memory(self):
+        return tracemalloc.get_traced_memory()
 
-    return matrix, deleted_columns_index
+    def permute_rows(self):
+        permuted_indices = np.random.permutation(self.matrix.shape[0])
+        self.matrix = self.matrix[permuted_indices]
+        self.permuted_row_indices = permuted_indices
 
+    def permute_columns(self):
+        permuted_indices = np.random.permutation(self.matrix.shape[1])
+        self.matrix = self.matrix[:,permuted_indices]
+        self.permuted_column_indices = permuted_indices
 
-def check_solution(matrix, solution):
-    tmp = np.array([False] * matrix.shape[0], dtype=bool)
-    for i in range(len(solution)):
-        if solution[i]:
-            tmp = np.logical_or(tmp, matrix[:,i])
+    def generate_children(self, h: Node):
+        """
+        Generate children of hypothesis h
+        """
+        children = []
+        if h.level == 0:
+            for i in range(len(h.value)):
+                hp = Node(h.value)
+                hp.value[i] = True
+                hp.update_level()
+                hp._set_fields(self.matrix)
+                children.append(hp)
+            return children
+        
+        hp = self.current[0]
+        pos = 0
+        for i in range(h.lm()):
+            h1 = Node(h.value)
+            h1.value[i] = True
+            h1.update_level()
+            h1._set_fields(self.matrix)
 
-    if np.sum(tmp) == matrix.shape[0]:
-        print('Correct solution!')
+            h1.propagate(h)
 
-    else:
-        print('NOT correct solution!')
+            hi = h.initial(h1, self.matrix)
+            hf = h.final(h1, self.matrix)
 
+            try:
+                pos = self.current.index(hi)
+            except:
+                pos = 0
+            hp = self.current[pos]
 
-def permute_matrix_columns(matrix):
-    col_sums = matrix.sum(axis=0)
-    sorted_indices = np.argsort(col_sums)[::-1]
-    matrix = matrix[:, sorted_indices]
-
-
-def MHS(matrix: np.ndarray, delta):
-    """
-    Minimum Hypothesis Search algorithm
-    """
-    # permute_matrix_columns(matrix)
-
-    matrix, deleted_columns_index = parse_matrix(matrix)
-
-    h0 = Node([False] * len(matrix[0]))
-    h0.update_level()
-    h0._set_fields(matrix)
-
-    global current
-    current = [h0]
-    # delta = []
-
-    while len(current) > 0:
-        next = []
-
-        i = 0
-        n = len(current)
-        print(current[0].level, n)
-        while i < n:
-            h = current[i]
-            if check(h):
-                print('Found solution')
-                delta.append(h.value)
-                current.pop(i)
-                i -= 1
-                n -= 1
-
-            elif h.level == 0:
-                next.extend(generate_children(h, matrix))
-            elif h.lm() != 0:
-                hs = h.global_initial(matrix)
-                tmp = [c for c in current if c <= hs]
-
-                i -= (len(current) - len(tmp))
-                n = len(tmp)
-                current = tmp
-                hp = current[0]
-
-                if hp != h:
-                    children = generate_children(h, matrix)
-                    next.extend(children)
-                    next.sort(reverse=True)
+            cont = 0
+            while hp <= hi and hp >= hf:
+                if hp.distance(h1) == 1 and hp.distance(h) == 2:
+                    h1.propagate(hp)
+                    cont += 1
                 
-            i += 1
-        current = next
+                pos += 1
+                hp = self.current[pos]
+            
+            if cont == h.level:
+                children.append(h1)
+        
+        return children
 
-    for sol in delta:
-        check_solution(matrix, sol)
+    def calculate_solutions(self):
+        tracemalloc.start()
 
-    delta = np.array(delta)
-    if len(delta) == 0:
-        return delta
-    
-    for i in deleted_columns_index[::-1]:
-        new_column = np.array([False] * delta.shape[0], dtype=bool)
-        delta = np.insert(delta, i, new_column, axis=1)
+        self.start_time = time.time()
+        self.parse_matrix()
 
-    return delta
+        h0 = Node([False] * len(self.matrix[0]))
+        h0.update_level()
+        h0._set_fields(self.matrix)
+
+        self.current = [h0]
+        self.solutions = []
+
+        max_level = max(self.matrix.shape)
+        self.current_level = 0
+        while len(self.current) > 0 and self.current_level <= max_level:
+            print(f'Starting level {self.current_level} with {len(self.current)} hypotesis')
+            next = []
+
+            i = 0
+            n = len(self.current)
+            while i < n:
+                h = self.current[i]
+                if h.is_solution():
+                    print('Found solution')
+                    right_solution = self.add_deleted_columns_to_solution(h.value)
+                    self.solutions.append(right_solution)
+                    self.current.pop(i)
+                    i -= 1
+                    n -= 1
+
+                elif h.level == 0:
+                    next.extend(self.generate_children(h))
+                elif h.lm() != 0:
+                    hs = h.global_initial(self.matrix)
+                    tmp = [c for c in self.current if c <= hs]
+
+                    i -= (len(self.current) - len(tmp))
+                    n = len(tmp)
+                    self.current = tmp
+                    hp = self.current[0]
+
+                    if hp != h:
+                        children = self.generate_children(h)
+                        next.extend(children)
+                        next.sort(reverse=True)
+                    
+                i += 1
+            
+            self.current = next
+            self.current_level += 1

@@ -1,0 +1,8 @@
+;;; Input matrix 7 X 3
+;;; Number of MHS found: 1
+;;; Minimum cardinality: 2
+;;; Maximum cardinality: 2
+;;; Elapsed time: 0.00357818603515625s
+;;; Memory used: 9.9638671875 KB
+;;; Computation stopped at level 3
+1 1 0 --
