@@ -4,10 +4,11 @@ import time
 import tracemalloc
 
 class Solver:
-    def __init__(self, matrix, instance_filename):
+    def __init__(self, matrix, instance_filename, debug = True):
         self.matrix = matrix
         self.instance_filename = instance_filename
         self.current_level = 0
+        self.debug = debug
 
     def check_solution(self, solution):
         tmp = np.array([False] * self.matrix.shape[0], dtype=bool)
@@ -21,13 +22,6 @@ class Solver:
         else:
             print('NOT correct solution!')
 
-
-    def permute_matrix_columns(matrix):
-        # col_sums = matrix.sum(axis=0)
-        # sorted_indices = np.argsort(col_sums)[::-1]
-        # matrix = matrix[:, sorted_indices]
-        pass
-
     def parse_matrix(self):
         self.deleted_columns_index = []
         M = self.matrix.shape[1]
@@ -37,11 +31,12 @@ class Solver:
                 self.matrix = np.delete(self.matrix, i, 1)
                 self.deleted_columns_index.append(i)
 
-        print(f'Start columns: {M} - End columns: {self.matrix.shape[1]}')
-        matrix_to_print = [[0 if x == False else 1 for x in row] for row in self.matrix]
-        
-        for row in matrix_to_print:
-            print(row)
+        if self.debug:
+            print(f'Start columns: {M} - End columns: {self.matrix.shape[1]}')
+            matrix_to_print = [[0 if x == False else 1 for x in row] for row in self.matrix]
+            
+            for row in matrix_to_print:
+                print(row)
 
     def add_deleted_columns_to_solution(self, solution):
         solution = solution.reshape(1, self.matrix.shape[1])
@@ -63,6 +58,16 @@ class Solver:
         permuted_indices = np.random.permutation(self.matrix.shape[1])
         self.matrix = self.matrix[:,permuted_indices]
         self.permuted_column_indices = permuted_indices
+
+    def get_solutions_without_permutation(self):
+        right_solutions = []
+        for sol in self.solutions:
+            right_solution = np.zeros_like(sol).reshape(1, len(sol))
+            right_solution[:, self.permuted_column_indices] = sol
+            right_solution = right_solution.reshape(-1)
+            right_solutions.append(right_solution)
+
+        return right_solutions
 
     def generate_children(self, h: Node):
         """
@@ -127,7 +132,8 @@ class Solver:
         max_level = max(self.matrix.shape)
         self.current_level = 0
         while len(self.current) > 0 and self.current_level <= max_level:
-            print(f'Starting level {self.current_level} with {len(self.current)} hypotesis')
+            if self.debug:
+                print(f'Starting level {self.current_level} with {len(self.current)} hypotesis')
             next = []
 
             i = 0
@@ -135,7 +141,8 @@ class Solver:
             while i < n:
                 h = self.current[i]
                 if h.is_solution():
-                    print('Found solution')
+                    if self.debug:
+                        print('Found solution')
                     right_solution = self.add_deleted_columns_to_solution(h.value)
                     self.solutions.append(right_solution)
                     self.current.pop(i)
@@ -162,3 +169,5 @@ class Solver:
             
             self.current = next
             self.current_level += 1
+
+        self.execution_time = time.time() - self.start_time

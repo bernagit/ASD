@@ -6,6 +6,8 @@ from algorithm import Solver
 import signal
 import sys
 
+from file import read_file
+
 BANCHMARK_FOLDERS = ['./benchmarks1', './benchmarks2']
 
 solver: Solver | None = None
@@ -48,24 +50,6 @@ def get_benchmark_files():
     
     return benchmarks
 
-def read_file(folder, filename):
-    file = f"{folder}/{filename}"
-    line = ';;;'
-    with open(file, 'r') as f:
-        lines = f.readlines()
-        
-        matrix = []
-        for line in lines:
-            if line.startswith(';;;'):
-                continue
-
-            line = line.replace('-', '')
-            line = line.strip()
-            matrix.append([bool(int(x)) for x in line.split()])
-        
-        matrix = np.array(matrix, dtype=bool)
-        return matrix
-
 def write_solutions(input_filename, solutions, resources_info, interruped = False):
     global solver
 
@@ -102,7 +86,7 @@ def main():
     instance_filename = '74L85.004.matrix'
     instance_matrix = np.array([[1, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 0], [1, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=bool)
     # instance_matrix = np.array([[0, 0, 0, 1, 1], [1, 1, 0, 0, 1], [0, 1, 1, 1, 1]], dtype=bool)
-    # instance_matrix = read_file('benchmarks1', instance_filename)
+    instance_matrix = read_file('benchmarks1', instance_filename)
     solver = Solver(instance_matrix, instance_filename)
     # solver.permute_columns()
     
