@@ -83,7 +83,7 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
     output_file.write(';;;\n')
 
     for x in solutions:
-        solution_line = f'{' '.join(['1' if y == True else '0' for y in x])} --\n'
+        solution_line = f'{' '.join(['1' if y == True else '0' for y in x])} -\n'
         output_file.write(solution_line)
 
 def main():
