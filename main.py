@@ -16,6 +16,7 @@ def signal_handler(sig, frame):
     """Handle Ctrl+C (SIGINT) signal."""
     print("\nCtrl+C detected! Cleaning up...")
     
+    solver.stopped = True
     elapsed = time.time() - solver.start_time
     write_solutions(solver.instance_filename, solver.solutions, [elapsed, solver.get_used_memory()], interruped=True)
 
@@ -73,8 +74,13 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
 
     output_file.write(f';;; Computation stopped at level {solver.current_level}\n')
     if interruped:
-        output_file.write(f';;; The computation has been stopped before terminating\n')
+        output_file.write(f';;; The computation has been stopped by the user before terminating\n')
 
+    output_file.write(';;;\n')
+    output_file.write(';;; Hypotesis generated for each level:\n')
+    for level in solver.hypoteses_per_level:
+        output_file.write(f';;; Level {level}: {solver.hypoteses_per_level[level]} hypotes{'es' if solver.hypoteses_per_level[level] > 1 else 'is'}\n')
+    output_file.write(';;;\n')
 
     for x in solutions:
         solution_line = f'{' '.join(['1' if y == True else '0' for y in x])} --\n'

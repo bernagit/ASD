@@ -9,6 +9,8 @@ class Solver:
         self.instance_filename = instance_filename
         self.current_level = 0
         self.debug = debug
+        self.stopped = False
+        self.hypoteses_per_level = {}
 
     def check_solution(self, solution):
         tmp = np.array([False] * self.matrix.shape[0], dtype=bool)
@@ -132,6 +134,7 @@ class Solver:
         max_level = max(self.matrix.shape)
         self.current_level = 0
         while len(self.current) > 0 and self.current_level <= max_level:
+            self.hypoteses_per_level[self.current_level] = len(self.current)
             if self.debug:
                 print(f'Starting level {self.current_level} with {len(self.current)} hypotesis')
             next = []
@@ -139,10 +142,13 @@ class Solver:
             i = 0
             n = len(self.current)
             while i < n:
+                if self.stopped:
+                    return
+
                 h = self.current[i]
                 if h.is_solution():
                     if self.debug:
-                        print('Found solution')
+                        print(f'Found {len(self.solutions) + 1} solution{'s' if len(self.solutions) > 0 else ''}')
                     right_solution = self.add_deleted_columns_to_solution(h.value)
                     self.solutions.append(right_solution)
                     self.current.pop(i)
