@@ -1,14 +1,15 @@
 import numpy as np
 
+COMMENT = ';;;'
+
 def read_file(folder, filename):
     file = f"{folder}/{filename}"
-    line = ';;;'
     with open(file, 'r') as f:
         lines = f.readlines()
         
         matrix = []
         for line in lines:
-            if line.startswith(';;;'):
+            if line.startswith(COMMENT):
                 continue
 
             line = line.replace('-', '')

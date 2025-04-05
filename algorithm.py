@@ -21,7 +21,6 @@ class Solver:
 
         if np.sum(tmp) == self.matrix.shape[0]:
             print('Correct solution!')
-
         else:
             print('NOT correct solution!')
 

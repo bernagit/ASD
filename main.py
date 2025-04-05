@@ -6,7 +6,7 @@ from algorithm import Solver
 import signal
 import sys
 
-from file import read_file
+from file import read_file, COMMENT
 
 BANCHMARK_FOLDERS = ['./benchmarks1', './benchmarks2']
 
@@ -62,28 +62,28 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
     filename_without_extension = ''.join(input_filename.split('.')[:-1])
     output_file = open(f'results/{filename_without_extension}.mhs', 'w+')
 
-    output_file.write(f';;; Input matrix {solver.matrix.shape[0]} X {solver.matrix.shape[1] + len(solver.deleted_columns_index)}\n')
-    output_file.write(f';;; Number of MHS found: {found_solutions}\n')
-    output_file.write(f';;; Minimum cardinality: {min_card}\n')
-    output_file.write(f';;; Maximum cardinality: {max_card}\n')
-    output_file.write(f';;; Elapsed time: {resources_info[0]}s\n')
-    output_file.write(f';;; Memory used: {(resources_info[1][1]) / (1024)} KB\n')
+    output_file.write(f'{COMMENT} Input matrix {solver.matrix.shape[0]} X {solver.matrix.shape[1] + len(solver.deleted_columns_index)}\n')
+    output_file.write(f'{COMMENT} Number of MHS found: {found_solutions}\n')
+    output_file.write(f'{COMMENT} Minimum cardinality: {min_card}\n')
+    output_file.write(f'{COMMENT} Maximum cardinality: {max_card}\n')
+    output_file.write(f'{COMMENT} Elapsed time: {resources_info[0]}s\n')
+    output_file.write(f'{COMMENT} Memory used: {(resources_info[1][1]) / (1024)} KB\n')
     if len(solver.deleted_columns_index) > 0:
-        output_file.write(f';;; Computation done removing the columns: {removed_columns_string}\n')
-        output_file.write(f';;; -> The dimensions of the matrix really used are {solver.matrix.shape[0]} X {solver.matrix.shape[1]}\n')
+        output_file.write(f'{COMMENT} Computation done removing the columns: {removed_columns_string}\n')
+        output_file.write(f'{COMMENT} -> The dimensions of the matrix really used are {solver.matrix.shape[0]} X {solver.matrix.shape[1]}\n')
 
-    output_file.write(f';;; Computation stopped at level {solver.current_level}\n')
+    output_file.write(f'{COMMENT} Computation stopped at level {solver.current_level}\n')
     if interruped:
-        output_file.write(f';;; The computation has been stopped by the user before terminating\n')
+        output_file.write(f'{COMMENT} The computation has been stopped by the user before terminating\n')
 
-    output_file.write(';;;\n')
-    output_file.write(';;; Hypotesis generated for each level:\n')
+    output_file.write(f'{COMMENT}\n')
+    output_file.write(f'{COMMENT} Hypotesis generated for each level:\n')
     for level in solver.hypoteses_per_level:
-        output_file.write(f';;; Level {level}: {solver.hypoteses_per_level[level]} hypotes{'es' if solver.hypoteses_per_level[level] > 1 else 'is'}\n')
-    output_file.write(';;;\n')
+        output_file.write(f'{COMMENT} Level {level}: {solver.hypoteses_per_level[level]} hypotes{'es' if solver.hypoteses_per_level[level] > 1 else 'is'}\n')
+    output_file.write(f'{COMMENT}\n')
 
     for x in solutions:
-        solution_line = f'{' '.join(['1' if y == True else '0' for y in x])} --\n'
+        solution_line = f'{' '.join(['1' if y == True else '0' for y in x])} -\n'
         output_file.write(solution_line)
 
 def main():
