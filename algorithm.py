@@ -4,13 +4,14 @@ import time
 import tracemalloc
 
 class Solver:
-    def __init__(self, matrix, instance_filename, debug = True):
+    def __init__(self, matrix, instance_filename, debug = True, max_time = float('inf')):
         self.matrix = matrix
         self.instance_filename = instance_filename
         self.current_level = 0
         self.debug = debug
         self.stopped = False
         self.hypoteses_per_level = {}
+        self.max_time = max_time
 
     def check_solution(self, solution):
         tmp = np.array([False] * self.matrix.shape[0], dtype=bool)
@@ -24,7 +25,8 @@ class Solver:
         else:
             print('NOT correct solution!')
 
-    def parse_matrix(self):
+    def remove_empty_columns(self):
+        """Rimuove le colonne vuote dalla matrice e restituisce il numero di colonne rimanenti."""
         self.deleted_columns_index = []
         M = self.matrix.shape[1]
         for i in range(self.matrix.shape[1] - 1, 0, -1):
@@ -32,11 +34,15 @@ class Solver:
             if np.sum(column) == 0:
                 self.matrix = np.delete(self.matrix, i, 1)
                 self.deleted_columns_index.append(i)
-
         if self.debug:
-            print(f'Start columns: {M} - End columns: {self.matrix.shape[1]}')
+            print(f"Colonne iniziali: {M}, Colonne finali: {self.matrix.shape[1]}")
+        return self.matrix.shape[1]
+
+    def parse_matrix(self):
+        """Prepara la matrice per la computazione."""
+        self.remove_empty_columns()
+        if self.debug:
             matrix_to_print = [[0 if x == False else 1 for x in row] for row in self.matrix]
-            
             for row in matrix_to_print:
                 print(row)
 
@@ -120,6 +126,7 @@ class Solver:
 
     def calculate_solutions(self):
         tracemalloc.start()
+        start = time.time()
 
         self.start_time = time.time()
         self.parse_matrix()
@@ -142,6 +149,11 @@ class Solver:
             i = 0
             n = len(self.current)
             while i < n:
+                elapsed_time = time.time() - start
+                if elapsed_time > self.max_time:
+                    print('Execution time exceeded 60 seconds, stopping computation.')
+                    self.stopped = True
+                    break
                 if self.stopped:
                     return
 

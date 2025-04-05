@@ -1,0 +1,5 @@
+Riepilogo dei risultati medi:
+Normal: Tempo medio = 4.68s, Memoria media = 4099.55 KB
+Row_permutations: Tempo medio = 4.87s, Memoria media = 4110.16 KB
+Column_permutations: Tempo medio = 3.04s, Memoria media = 4110.17 KB
+Row_and_column_permutations: Tempo medio = 4.84s, Memoria media = 4110.17 KB
