@@ -73,42 +73,50 @@ class Solver:
             for row in matrix_to_print:
                 print(row)
 
-    def add_deleted_columns_to_solution(self, solution):
+    def add_deleted_columns_to_solution(self, solution: np.ndarray):
         solution = solution.reshape(1, self.matrix.shape[1])
 
-        index_associations = {}
         tmp = []
         for key in self.duplication_list:
             tmp.extend(self.duplication_list[key])
-            for x in self.duplication_list[key]:
-                index_associations[x] = key
         tmp.sort()
 
+        # ripristina le colonne duplicate mettendo a False le righe duplicate
         for i in tmp:
             solution = np.insert(solution, i, [False], axis=1)
-            
-        for i in tmp:
-            parent_index = index_associations[i]
-            # for row in solution:
-            #     if row[parent_index]:
-            #         new_row = np.copy(row)
-            #         new_row[parent_index] = False
-            #         new_row[i] = True
-            #         np.insert(solution, solution.shape[0], new_row, axis=0)
-            #         # np.vstack([solution, new_row])
 
-            if solution[0][parent_index]:
-                new_sol = np.copy(solution[0])
-                new_sol[parent_index] = False
-                new_sol[i] = True
-                # np.insert(solution, solution.shape[0], new_sol, axis=0)
-                solution = np.vstack([solution, new_sol])
+        original_indexes = []
+        for i in range(len(solution[0])):
+            if solution[0][i]:
+                original_indexes.append(i)
 
+        original_indexes.sort()
+
+        arr = []
+        for idx in range(len(solution[0])):
+            if solution[0][idx] and idx in self.duplication_list:
+                indexes = []
+                indexes.append(idx)
+                indexes.extend(self.duplication_list[idx])
+                arr.append(indexes)
+            elif solution[0][idx] and idx not in self.duplication_list:
+                arr.append([idx])
+    
+        from itertools import product
+        combinations = list(product(*arr))
+        for combination in combinations:
+            # skip the already present solution
+            if list(combination) == original_indexes:
+                continue
+            new_row = np.zeros(len(solution[0]), dtype=bool)
+            for i in range(len(combination)):
+                new_row[combination[i]] = True
+            solution = np.vstack([solution, new_row])
+        
 
         for i in self.deleted_columns_index[::-1]:
             solution = np.insert(solution, i, [False], axis=1)
 
-        # solution = solution.reshape(-1)
         return solution
 
     def get_used_memory(self):

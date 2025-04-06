@@ -1,19 +1,19 @@
-;;; Input matrix 4 X 23
+    ;;; Input matrix 4 X 33
 ;;; Number of MHS found: 42
 ;;; Minimum cardinality: 3
 ;;; Maximum cardinality: 4
-;;; Elapsed time: 0.023720502853393555s
-;;; Memory used: 17.4921875 KB
+;;; Elapsed time: 767.2212266921997s
+;;; Memory used: 2273.66796875 KB
 ;;; Computation done removing the columns: [2, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 18, 19, 20, 25, 27, 30]
-;;; -> The dimensions of the matrix really used are 4 X 5
-;;; Computation stopped at level 5
+;;; -> The dimensions of the matrix really used are 4 X 15
+;;; Computation stopped at level 15
 ;;;
 ;;; Hypotesis generated for each level:
 ;;; Level 0: 1 hypotesis
-;;; Level 1: 5 hypoteses
-;;; Level 2: 10 hypoteses
-;;; Level 3: 10 hypoteses
-;;; Level 4: 3 hypoteses
+;;; Level 1: 15 hypoteses
+;;; Level 2: 105 hypoteses
+;;; Level 3: 455 hypoteses
+;;; Level 4: 1257 hypoteses
 ;;;
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1 0 0 -
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 0 -
