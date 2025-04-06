@@ -100,7 +100,8 @@ def main():
 
     for file_name in file_names:
         executions.append(os.path.join(cwd, file_name))
-    else:
+    
+    if not executions:
         run_all = input('Do you want to run the all benchmarks? (y/n) ')
         if run_all.lower() == 'y':
             files = get_benchmark_files()
