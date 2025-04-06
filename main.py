@@ -101,9 +101,22 @@ def main():
     for file_name in file_names:
         executions.append(os.path.join(cwd, file_name))
     else:
-        files = get_benchmark_files()
-        for folder, file_name in files:
-            executions.append(os.path.join(cwd, folder, file_name))
+        run_all = input('Do you want to run the all benchmarks? (y/n) ')
+        if run_all.lower() == 'y':
+            files = get_benchmark_files()
+            for folder, file_name in files:
+                executions.append(os.path.join(cwd, folder, file_name))
+
+        selected_files = input('Insert the names of the files you want to run (with the respective folder): ')
+        if selected_files:
+            if os.path.exists(selected_files):
+                executions.append(os.path.join(cwd, selected_files))
+            else:
+                print(f'File {selected_files} not found!')
+                return
+        else:
+            print('No files selected!')
+            return
         
     for file_name in executions:
         instance_matrix = read_file(file_name)
@@ -114,6 +127,10 @@ def main():
         elapsed = time.time() - solver.start_time
 
         write_solutions(file_name, solver.solutions, [elapsed, solver.get_used_memory()])
+    else:
+        print('All files processed!')
+        print('Exiting...')
+        return
 
 
 if __name__ == '__main__':
