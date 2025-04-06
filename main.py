@@ -89,8 +89,8 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
 def main():
     global solver
 
-    instance_filename = '74L85.004.matrix'
-    instance_matrix = np.array([[1, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 0], [1, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=bool)
+    instance_filename = '74L85.021.matrix'
+    # instance_matrix = np.array([[1, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 0], [1, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=bool)
     # instance_matrix = np.array([[0, 0, 0, 1, 1], [1, 1, 0, 0, 1], [0, 1, 1, 1, 1]], dtype=bool)
     instance_matrix = read_file('benchmarks1', instance_filename)
     solver = Solver(instance_matrix, instance_filename)

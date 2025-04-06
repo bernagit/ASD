@@ -28,7 +28,7 @@ class Solver:
         """Rimuove le colonne vuote dalla matrice e restituisce il numero di colonne rimanenti."""
         self.deleted_columns_index = []
         M = self.matrix.shape[1]
-        for i in range(self.matrix.shape[1] - 1, 0, -1):
+        for i in range(self.matrix.shape[1] - 1, -1, -1):
             column = self.matrix[:, i].reshape(-1)
             if np.sum(column) == 0:
                 self.matrix = np.delete(self.matrix, i, 1)
@@ -37,9 +37,37 @@ class Solver:
             print(f"Colonne iniziali: {M}, Colonne finali: {self.matrix.shape[1]}")
         return self.matrix.shape[1]
 
+    def remove_same_columns(self):
+        counter = {}
+        self.duplication_list = {}
+        for i in range(self.matrix.shape[1]):
+            column = self.matrix[:, i].reshape(-1)
+            column_str = ''.join('1' if x else '0' for x in column)
+
+            if column_str not in counter:
+                counter[column_str] = []
+
+            counter[column_str].append(i)
+
+        tmp = []
+        for key in counter:
+            if len(counter[key]) <= 1:
+                continue
+            x = counter[key][1:]
+            tmp.extend(x)
+            self.duplication_list[counter[key][0]] = x
+        tmp.sort()
+
+
+        for i in range(len(tmp) - 1, -1, -1):
+            self.matrix = np.delete(self.matrix, tmp[i], 1)
+
+        return self.matrix.shape[1]
+
     def parse_matrix(self):
         """Prepara la matrice per la computazione."""
         self.remove_empty_columns()
+        self.remove_same_columns()
         if self.debug:
             matrix_to_print = [[0 if x == False else 1 for x in row] for row in self.matrix]
             for row in matrix_to_print:
@@ -47,10 +75,40 @@ class Solver:
 
     def add_deleted_columns_to_solution(self, solution):
         solution = solution.reshape(1, self.matrix.shape[1])
+
+        index_associations = {}
+        tmp = []
+        for key in self.duplication_list:
+            tmp.extend(self.duplication_list[key])
+            for x in self.duplication_list[key]:
+                index_associations[x] = key
+        tmp.sort()
+
+        for i in tmp:
+            solution = np.insert(solution, i, [False], axis=1)
+            
+        for i in tmp:
+            parent_index = index_associations[i]
+            # for row in solution:
+            #     if row[parent_index]:
+            #         new_row = np.copy(row)
+            #         new_row[parent_index] = False
+            #         new_row[i] = True
+            #         np.insert(solution, solution.shape[0], new_row, axis=0)
+            #         # np.vstack([solution, new_row])
+
+            if solution[0][parent_index]:
+                new_sol = np.copy(solution[0])
+                new_sol[parent_index] = False
+                new_sol[i] = True
+                # np.insert(solution, solution.shape[0], new_sol, axis=0)
+                solution = np.vstack([solution, new_sol])
+
+
         for i in self.deleted_columns_index[::-1]:
             solution = np.insert(solution, i, [False], axis=1)
 
-        solution = solution.reshape(-1)
+        # solution = solution.reshape(-1)
         return solution
 
     def get_used_memory(self):
@@ -123,12 +181,15 @@ class Solver:
         
         return children
 
-    def calculate_solutions(self):
+    def calculate_solutions(self, parse_matrix = True):
         tracemalloc.start()
         start = time.time()
 
         self.start_time = time.time()
-        self.parse_matrix()
+        if parse_matrix:
+            self.parse_matrix()
+        else:
+            self.deleted_columns_index = []
 
         h0 = Node([False] * len(self.matrix[0]))
         h0.update_level()
@@ -161,7 +222,8 @@ class Solver:
                     if self.debug:
                         print(f'Found {len(self.solutions) + 1} solution{'s' if len(self.solutions) > 0 else ''}')
                     right_solution = self.add_deleted_columns_to_solution(h.value)
-                    self.solutions.append(right_solution)
+                    # self.solutions.append(right_solution)
+                    self.solutions.extend(right_solution)
                     self.current.pop(i)
                     i -= 1
                     n -= 1
