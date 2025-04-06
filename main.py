@@ -8,7 +8,7 @@ import sys
 
 from file import read_file, COMMENT
 
-BANCHMARK_FOLDERS = ['./benchmarks1', './benchmarks2']
+BANCHMARK_FOLDERS = ['benchmarks1', 'benchmarks2']
 
 solver: Solver | None = None
 
@@ -45,7 +45,9 @@ class Result():
 
 def get_benchmark_files():
     benchmarks = []
+    pwd = os.getcwd()
     for folder in BANCHMARK_FOLDERS:
+        folder = os.path.join(pwd, folder)
         files = [(folder, f) for f in os.listdir(folder) if f.endswith('.matrix')]
         benchmarks.extend(files)
     
@@ -54,13 +56,15 @@ def get_benchmark_files():
 def write_solutions(input_filename, solutions, resources_info, interruped = False):
     global solver
 
+    input_filename = os.path.basename(input_filename)
+    input_filename = '.'.join(input_filename.split('.')[:-1])
+
     min_card = np.sum(solutions[0])
     max_card = np.sum(solutions[-1])
     found_solutions = len(solutions)
     removed_columns_string = f'[{', '.join(str(i + 1) for i in solver.deleted_columns_index[::-1])}]'
 
-    filename_without_extension = ''.join(input_filename.split('.')[:-1])
-    output_file = open(f'results/{filename_without_extension}.mhs', 'w+')
+    output_file = open(f'results/{input_filename}.mhs', 'w+')
 
     output_file.write(f'{COMMENT} Input matrix {solver.matrix.shape[0]} X {solver.matrix.shape[1] + len(solver.deleted_columns_index)}\n')
     output_file.write(f'{COMMENT} Number of MHS found: {found_solutions}\n')
@@ -88,18 +92,28 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
 
 def main():
     global solver
+    cwd = os.getcwd()
 
-    instance_filename = '74L85.021.matrix'
-    # instance_matrix = np.array([[1, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 0], [1, 0, 1], [0, 1, 0], [1, 0, 0]], dtype=bool)
-    # instance_matrix = np.array([[0, 0, 0, 1, 1], [1, 1, 0, 0, 1], [0, 1, 1, 1, 1]], dtype=bool)
-    instance_matrix = read_file('benchmarks1', instance_filename)
-    solver = Solver(instance_matrix, instance_filename)
-    # solver.permute_columns()
-    
-    solver.calculate_solutions()
-    elapsed = time.time() - solver.start_time
-    
-    write_solutions(instance_filename, solver.solutions, [elapsed, solver.get_used_memory()])
+    file_names = sys.argv[1:]
+
+    executions = []
+
+    for file_name in file_names:
+        executions.append(os.path.join(cwd, file_name))
+    else:
+        files = get_benchmark_files()
+        for folder, file_name in files:
+            executions.append(os.path.join(cwd, folder, file_name))
+        
+    for file_name in executions:
+        instance_matrix = read_file(file_name)
+        solver = Solver(instance_matrix, file_name)
+        # solver.permute_columns()
+
+        solver.calculate_solutions()
+        elapsed = time.time() - solver.start_time
+
+        write_solutions(file_name, solver.solutions, [elapsed, solver.get_used_memory()])
 
 
 if __name__ == '__main__':

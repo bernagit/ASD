@@ -81,7 +81,6 @@ class Solver:
             tmp.extend(self.duplication_list[key])
         tmp.sort()
 
-        # ripristina le colonne duplicate mettendo a False le righe duplicate
         for i in tmp:
             solution = np.insert(solution, i, [False], axis=1)
 
@@ -116,6 +115,9 @@ class Solver:
 
         for i in self.deleted_columns_index[::-1]:
             solution = np.insert(solution, i, [False], axis=1)
+
+        if self.debug:
+            print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
 
         return solution
 

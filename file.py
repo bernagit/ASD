@@ -2,8 +2,8 @@ import numpy as np
 
 COMMENT = ';;;'
 
-def read_file(folder, filename):
-    file = f"{folder}/{filename}"
+def read_file(filename):
+    file = f"{filename}"
     with open(file, 'r') as f:
         lines = f.readlines()
         
