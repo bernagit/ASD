@@ -4,7 +4,7 @@ import time
 import tracemalloc
 
 class Solver:
-    def __init__(self, matrix, instance_filename, debug = True, max_time = float('inf')):
+    def __init__(self, matrix, instance_filename, debug=True, max_time=float('inf')):
         self.matrix = matrix
         self.instance_filename = instance_filename
         self.current_level = 0
@@ -12,6 +12,7 @@ class Solver:
         self.stopped = False
         self.hypoteses_per_level = {}
         self.max_time = max_time
+        self.solution_times = (None, None) 
 
     def check_solution(self, solution):
         tmp = np.array([False] * self.matrix.shape[0], dtype=bool)
@@ -28,7 +29,7 @@ class Solver:
         """Rimuove le colonne vuote dalla matrice e restituisce il numero di colonne rimanenti."""
         self.deleted_columns_index = []
         M = self.matrix.shape[1]
-        for i in range(self.matrix.shape[1] - 1, 0, -1):
+        for i in range(self.matrix.shape[1] - 1, -1, -1):
             column = self.matrix[:, i].reshape(-1)
             if np.sum(column) == 0:
                 self.matrix = np.delete(self.matrix, i, 1)
@@ -61,10 +62,37 @@ class Solver:
         self.matrix = self.matrix[permuted_indices]
         self.permuted_row_indices = permuted_indices
 
-    def permute_columns(self):
-        permuted_indices = np.random.permutation(self.matrix.shape[1])
-        self.matrix = self.matrix[:,permuted_indices]
-        self.permuted_column_indices = permuted_indices
+    def permute_columns(self, randomize = True, decrescent=True):
+        if self.debug:
+            start= time.time()
+        if  randomize:
+            permuted_indices = np.random.permutation(self.matrix.shape[1])
+            self.matrix = self.matrix[:,permuted_indices]
+            self.permuted_column_indices = permuted_indices
+        elif decrescent:
+        # Permutazione delle colonne in base al numero di '1'
+            
+            column_sums = np.sum(self.matrix, axis=0)  # Somma degli elementi di ogni colonna
+            permuted_indices = np.argsort(-column_sums)  # Ordina in ordine decrescente
+            self.matrix = self.matrix[:, permuted_indices]
+            self.permuted_column_indices = permuted_indices  # Salva gli indici permutati
+            if self.debug:
+                print(f"Colonne permutate in base al numero di '1': {permuted_indices}")
+        else:
+            # Permutazione delle colonne in base al numero di '0'
+            column_sums = np.sum(self.matrix, axis=0)
+            permuted_indices = np.argsort(column_sums)  # Ordina in ordine crescente
+            self.matrix = self.matrix[:, permuted_indices]
+            self.permuted_column_indices = permuted_indices  # Salva gli indici permutati
+            if self.debug:
+                print(f"Colonne permutate in base al numero di '0': {permuted_indices}")
+        if self.debug:
+            end = time.time()
+            elapsed_time = end - start
+            print(f"Tempo di esecuzione per la permutazione delle colonne: {elapsed_time:.4f} secondi")
+
+    
+    
 
     def get_solutions_without_permutation(self):
         right_solutions = []
@@ -123,7 +151,8 @@ class Solver:
         
         return children
 
-    def calculate_solutions(self):
+
+    def calculate_solutions(self, firstSolution=False):
         tracemalloc.start()
         start = time.time()
 
@@ -150,7 +179,7 @@ class Solver:
             while i < n:
                 elapsed_time = time.time() - start
                 if elapsed_time > self.max_time:
-                    print('Execution time exceeded 60 seconds, stopping computation.')
+                    print(f'Execution time exceeded {self.max_time} seconds, stopping computation.')
                     self.stopped = True
                     break
                 if self.stopped:
@@ -159,7 +188,18 @@ class Solver:
                 h = self.current[i]
                 if h.is_solution():
                     if self.debug:
-                        print(f'Found {len(self.solutions) + 1} solution{'s' if len(self.solutions) > 0 else ''}')
+                        time_solution = time.time() - start
+                        print(f'Found {len(self.solutions) + 1} solution{"s" if len(self.solutions) > 0 else ""} at time {time_solution:.2f} seconds')
+
+                    if firstSolution:# Registra i tempi delle prime due soluzioni
+                        if len(self.solutions) == 0:
+                            self.solution_times = (time.time() - self.start_time, self.solution_times[1])
+                        elif len(self.solutions) == 1:
+                            self.solution_times = (self.solution_times[0], time.time() - self.start_time)
+                            self.execution_time = time.time() - self.start_time
+                            return
+                        
+
                     right_solution = self.add_deleted_columns_to_solution(h.value)
                     self.solutions.append(right_solution)
                     self.current.pop(i)
