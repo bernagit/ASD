@@ -2,3 +2,6 @@
 .vscode
 __pycache__
 *.pyc
+performance_comparison.csv
+.gitignore
+permutation_results.csv
