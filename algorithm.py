@@ -4,17 +4,28 @@ import time
 import tracemalloc
 
 class Option():
-    def __init__(self, debug, delete_zeros, delete_duplicates, max_time):
+    def __init__(self,
+                 debug=False,
+                 delete_zeros=False,
+                 delete_duplicates=False,
+                 max_time=False,
+                 permute_rows=False,
+                 permute_columns=False,
+                 permute_columns_desc=False,
+                 permute_columns_asc=False):
         self.debug = debug
         self.delete_zeros = delete_zeros
         self.delete_duplicates = delete_duplicates
         self.max_time = max_time
+        self.permute_rows = permute_rows
+        self.permute_columns = permute_columns
+        self.permute_columns_desc = permute_columns_desc
+        self.permute_columns_asc = permute_columns_asc
 class Solver:
     def __init__(self, matrix, instance_filename, option: Option):
         self.matrix = matrix
         self.instance_filename = instance_filename
         self.current_level = 0
-        self.debug = option.debug
         self.stopped = False
         self.hypoteses_per_level = {}
         self.max_time = option.max_time
@@ -40,7 +51,7 @@ class Solver:
             if np.sum(column) == 0:
                 self.matrix = np.delete(self.matrix, i, 1)
                 self.deleted_columns_index.append(i)
-        if self.debug:
+        if self.option.debug:
             print(f"Colonne iniziali: {M}, Colonne finali: {self.matrix.shape[1]}")
         return self.matrix.shape[1]
 
@@ -77,7 +88,7 @@ class Solver:
             self.remove_empty_columns()
         if self.option.delete_duplicates:
             self.remove_same_columns()
-        if self.debug:
+        if self.option.debug:
             matrix_to_print = [[0 if x == False else 1 for x in row] for row in self.matrix]
             for row in matrix_to_print:
                 print(row)
@@ -112,19 +123,38 @@ class Solver:
                     arr.append([idx])
 
             from itertools import product
-            combinations = list(product(*arr))
+            num_of_combinations = 1
+            for element in arr:
+                num_of_combinations *= len(element)
+            
+            if self.option.debug:
+                print(f'Number of combinations: {num_of_combinations}')
+            if num_of_combinations > 1000000:
+                print(f'Warning: number of combinations is too high ({num_of_combinations}), skipping this step.')
+                self.stopped = True
 
-            # remove the already present solution from the combinations
-            combinations.remove(tuple(original_indexes))
+            if not self.stopped:
+                combinations = list(product(*arr))
 
-            for combination in combinations:
-                new_row = np.zeros(len(solution[0]), dtype=bool)
-                for i in range(len(combination)):
-                    new_row[combination[i]] = True
-                solution = np.vstack([solution, new_row])
-        
-            if self.debug:
-                print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
+                # remove the already present solution from the combinations
+                combinations.remove(tuple(original_indexes))
+                
+                start = time.time()
+                i = 0
+                for combination in combinations:
+                    if i % 1000 == 0:
+                        elapsed_time = time.time() - start
+                        if elapsed_time > self.max_time:
+                            print(f'Execution time exceeded {self.max_time} seconds, stopping computation.')
+                            self.stopped = True
+                            return
+                    new_row = np.zeros(len(solution[0]), dtype=bool)
+                    new_row[list(combination)] = True
+                    solution = np.vstack([solution, new_row])
+                    i += 1
+
+                if self.option.debug:
+                    print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
 
         if self.option.delete_zeros:
             for i in self.deleted_columns_index[::-1]:
@@ -136,41 +166,38 @@ class Solver:
         return tracemalloc.get_traced_memory()
 
     def permute_rows(self):
-        permuted_indices = np.random.permutation(self.matrix.shape[0])
-        self.matrix = self.matrix[permuted_indices]
-        self.permuted_row_indices = permuted_indices
+        if self.option.permute_rows:
+            permuted_indices = np.random.permutation(self.matrix.shape[0])
+            self.matrix = self.matrix[permuted_indices]
+            self.permuted_row_indices = permuted_indices
 
-    def permute_columns(self, randomize = True, decrescent=True):
-        if self.debug:
+    def permute_columns(self):
+        if self.option.debug:
             start= time.time()
-        if  randomize:
+        if self.option.permute_columns:
             permuted_indices = np.random.permutation(self.matrix.shape[1])
             self.matrix = self.matrix[:,permuted_indices]
             self.permuted_column_indices = permuted_indices
-        elif decrescent:
-        # Permutazione delle colonne in base al numero di '1'
-            
+        elif self.option.permute_columns_desc:
+            # Permutazione delle colonne in base al numero di '1'
             column_sums = np.sum(self.matrix, axis=0)  # Somma degli elementi di ogni colonna
             permuted_indices = np.argsort(-column_sums)  # Ordina in ordine decrescente
             self.matrix = self.matrix[:, permuted_indices]
             self.permuted_column_indices = permuted_indices  # Salva gli indici permutati
-            if self.debug:
+            if self.option.debug:
                 print(f"Colonne permutate in base al numero di '1': {permuted_indices}")
-        else:
+        elif self.option.permute_columns_asc:
             # Permutazione delle colonne in base al numero di '0'
             column_sums = np.sum(self.matrix, axis=0)
             permuted_indices = np.argsort(column_sums)  # Ordina in ordine crescente
             self.matrix = self.matrix[:, permuted_indices]
             self.permuted_column_indices = permuted_indices  # Salva gli indici permutati
-            if self.debug:
+            if self.option.debug:
                 print(f"Colonne permutate in base al numero di '0': {permuted_indices}")
-        if self.debug:
+        if self.option.debug:
             end = time.time()
             elapsed_time = end - start
             print(f"Tempo di esecuzione per la permutazione delle colonne: {elapsed_time:.4f} secondi")
-
-    
-    
 
     def get_solutions_without_permutation(self):
         right_solutions = []
@@ -229,14 +256,19 @@ class Solver:
         
         return children
 
+    def preprocess_matrix(self):
+        self.parse_matrix()
+        self.permute_columns()
+        self.permute_rows()
 
-    def calculate_solutions(self, firstSolution=False):
+    def calculate_solutions(self, firstSolution=False, preprocess=True):
         tracemalloc.start()
         start = time.time()
 
+        if preprocess:
+            self.preprocess_matrix()
+        
         self.start_time = time.time()
-
-        self.parse_matrix()
 
         h0 = Node([False] * len(self.matrix[0]))
         h0.update_level()
@@ -249,7 +281,7 @@ class Solver:
         self.current_level = 0
         while len(self.current) > 0 and self.current_level <= max_level:
             self.hypoteses_per_level[self.current_level] = len(self.current)
-            if self.debug:
+            if self.option.debug:
                 print(f'Starting level {self.current_level} with {len(self.current)} hypotesis')
             next = []
 
@@ -266,11 +298,11 @@ class Solver:
 
                 h = self.current[i]
                 if h.is_solution():
-                    if self.debug:
+                    if self.option.debug:
                         time_solution = time.time() - start
                         print(f'Found {len(self.solutions) + 1} solution{"s" if len(self.solutions) > 0 else ""} at time {time_solution:.2f} seconds')
 
-                    if firstSolution:# Registra i tempi delle prime due soluzioni
+                    if firstSolution:
                         if len(self.solutions) == 0:
                             self.solution_times = (time.time() - self.start_time, self.solution_times[1])
                         elif len(self.solutions) == 1:
@@ -278,9 +310,11 @@ class Solver:
                             self.execution_time = time.time() - self.start_time
                             return
                         
-
                     right_solution = self.add_deleted_columns_to_solution(h.value)
-                    # self.solutions.append(right_solution)
+                    
+                    if self.stopped:
+                        return
+
                     self.solutions.extend(right_solution)
                     self.current.pop(i)
                     i -= 1
