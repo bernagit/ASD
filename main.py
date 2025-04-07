@@ -27,6 +27,7 @@ solver: Solver | None = None
 def signal_handler(sig, frame):
     """Handle Ctrl+C (SIGINT) signal."""
     print("\nCtrl+C detected! Cleaning up...")
+    print("Writing solutions to file...")
     
     solver.stopped = True
     elapsed = time.time() - solver.start_time
@@ -185,7 +186,7 @@ def main():
         solver = Solver(instance_matrix, file_name, opt)
 
         solver.calculate_solutions()
-        
+
         elapsed = time.time() - solver.start_time
 
         write_solutions(file_name, solver.solutions, [elapsed, solver.get_used_memory()])
