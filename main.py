@@ -1,12 +1,20 @@
 import os
 import time
 import numpy as np
-from algorithm import Solver
+from algorithm import Solver, Option
 
 import signal
 import sys
 
 from file import read_file, COMMENT
+
+commands = {
+    '-h': ['Show this help message and exit'],
+    '-v': ['Enable verbose output'],
+    '-dz': ['Delete the columns with all zeros'],
+    '-dd': ['Delete the duplicated columns'],
+    '-m': ['Set the maximum time to run the algorithm'],
+}
 
 BANCHMARK_FOLDERS = ['benchmarks1', 'benchmarks2']
 
@@ -90,11 +98,49 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
         solution_line = f'{' '.join(['1' if y == True else '0' for y in x])} -\n'
         output_file.write(solution_line)
 
+
+def handle_menu(args):
+    available_commands = commands.keys()
+    debug = False
+    delete_zeros = False
+    delete_duplicates = False
+    max_time = float('inf')
+
+    file_names = []
+    for arg in args:
+        if arg in available_commands:
+            if arg == '-h':
+                print('Available commands:')
+                for command in commands:
+                    print(f'{command} - {commands[command][0]}')
+                return None, None
+            elif arg == '-v':
+                debug = True
+            elif arg == '-dz':
+                delete_zeros = True
+            elif arg == '-dd':
+                delete_duplicates = True
+            elif arg == '-m':
+                max_time = int(args[args.index(arg) + 1])
+        else:
+            file_names.append(arg)
+    
+    # remove max_time if present
+    if str(max_time) in file_names:
+        file_names.remove(str(max_time))
+    
+    return Option(debug, delete_zeros, delete_duplicates, max_time), file_names
+
 def main():
     global solver
     cwd = os.getcwd()
 
-    file_names = sys.argv[1:]
+    args = sys.argv[1:]
+
+    opt, file_names = handle_menu(args)
+
+    if opt is None and file_names is None:
+        return
 
     executions = []
 
@@ -121,8 +167,7 @@ def main():
         
     for file_name in executions:
         instance_matrix = read_file(file_name)
-        solver = Solver(instance_matrix, file_name)
-        # solver.permute_columns()
+        solver = Solver(instance_matrix, file_name, opt)
 
         solver.calculate_solutions()
         elapsed = time.time() - solver.start_time
@@ -136,3 +181,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

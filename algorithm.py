@@ -3,15 +3,22 @@ from node import Node
 import time
 import tracemalloc
 
+class Option():
+    def __init__(self, debug, delete_zeros, delete_duplicates, max_time):
+        self.debug = debug
+        self.delete_zeros = delete_zeros
+        self.delete_duplicates = delete_duplicates
+        self.max_time = max_time
 class Solver:
-    def __init__(self, matrix, instance_filename, debug = True, max_time = float('inf')):
+    def __init__(self, matrix, instance_filename, option: Option):
         self.matrix = matrix
         self.instance_filename = instance_filename
         self.current_level = 0
-        self.debug = debug
+        self.debug = option.debug
         self.stopped = False
         self.hypoteses_per_level = {}
-        self.max_time = max_time
+        self.max_time = option.max_time
+        self.option = option
 
     def check_solution(self, solution):
         tmp = np.array([False] * self.matrix.shape[0], dtype=bool)
@@ -66,8 +73,10 @@ class Solver:
 
     def parse_matrix(self):
         """Prepara la matrice per la computazione."""
-        self.remove_empty_columns()
-        self.remove_same_columns()
+        if self.option.delete_zeros:
+            self.remove_empty_columns()
+        if self.option.delete_duplicates:
+            self.remove_same_columns()
         if self.debug:
             matrix_to_print = [[0 if x == False else 1 for x in row] for row in self.matrix]
             for row in matrix_to_print:
@@ -76,48 +85,50 @@ class Solver:
     def add_deleted_columns_to_solution(self, solution: np.ndarray):
         solution = solution.reshape(1, self.matrix.shape[1])
 
-        tmp = []
-        for key in self.duplication_list:
-            tmp.extend(self.duplication_list[key])
-        tmp.sort()
+        if self.option.delete_duplicates:
+            tmp = []
+            for key in self.duplication_list:
+                tmp.extend(self.duplication_list[key])
+            tmp.sort()
 
-        for i in tmp:
-            solution = np.insert(solution, i, [False], axis=1)
+            for i in tmp:
+                solution = np.insert(solution, i, [False], axis=1)
 
-        original_indexes = []
-        for i in range(len(solution[0])):
-            if solution[0][i]:
-                original_indexes.append(i)
+            original_indexes = []
+            for i in range(len(solution[0])):
+                if solution[0][i]:
+                    original_indexes.append(i)
 
-        original_indexes.sort()
+            original_indexes.sort()
 
-        arr = []
-        for idx in range(len(solution[0])):
-            if solution[0][idx] and idx in self.duplication_list:
-                indexes = []
-                indexes.append(idx)
-                indexes.extend(self.duplication_list[idx])
-                arr.append(indexes)
-            elif solution[0][idx] and idx not in self.duplication_list:
-                arr.append([idx])
-    
-        from itertools import product
-        combinations = list(product(*arr))
-        for combination in combinations:
-            # skip the already present solution
-            if list(combination) == original_indexes:
-                continue
-            new_row = np.zeros(len(solution[0]), dtype=bool)
-            for i in range(len(combination)):
-                new_row[combination[i]] = True
-            solution = np.vstack([solution, new_row])
+            arr = []
+            for idx in range(len(solution[0])):
+                if solution[0][idx] and idx in self.duplication_list:
+                    indexes = []
+                    indexes.append(idx)
+                    indexes.extend(self.duplication_list[idx])
+                    arr.append(indexes)
+                elif solution[0][idx] and idx not in self.duplication_list:
+                    arr.append([idx])
+
+            from itertools import product
+            combinations = list(product(*arr))
+
+            for combination in combinations:
+                # skip the already present solution
+                if list(combination) == original_indexes:
+                    continue
+                new_row = np.zeros(len(solution[0]), dtype=bool)
+                for i in range(len(combination)):
+                    new_row[combination[i]] = True
+                solution = np.vstack([solution, new_row])
         
+            if self.debug:
+                print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
 
-        for i in self.deleted_columns_index[::-1]:
-            solution = np.insert(solution, i, [False], axis=1)
-
-        if self.debug:
-            print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
+        if self.option.delete_zeros:
+            for i in self.deleted_columns_index[::-1]:
+                solution = np.insert(solution, i, [False], axis=1)
 
         return solution
 
