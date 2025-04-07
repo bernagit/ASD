@@ -144,6 +144,7 @@ class Solver:
                 for combination in combinations:
                     if i % 1000 == 0:
                         elapsed_time = time.time() - start
+                        print(f'Adding combination {i} of {len(combinations)}')
                         if elapsed_time > self.max_time:
                             print(f'Execution time exceeded {self.max_time} seconds, stopping computation.')
                             self.stopped = True

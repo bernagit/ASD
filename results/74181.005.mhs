@@ -2,9 +2,10 @@
 ;;; Number of MHS found: 42
 ;;; Minimum cardinality: 1
 ;;; Maximum cardinality: 2
-;;; Elapsed time: 0.1190948486328125s
-;;; Memory used: 579.92578125 KB
-;;; Computation done removing the columns: [1, 2, 4, 10, 11, 13, 14, 16, 17, 18, 20, 21, 22, 23, 25, 26, 31, 33, 37, 38, 39, 40, 46, 47, 48, 49, 50, 51, 52, 53, 54, 56, 57, 59, 60, 61, 63, 64, 65, 66]
+;;; Elapsed time: 0.05095243453979492s
+;;; Memory used: 93.98828125 KB
+;;; Computation done removing the zero columns: [1, 2, 4, 10, 11, 13, 14, 16, 17, 18, 20, 21, 22, 23, 25, 26, 31, 33, 37, 38, 39, 40, 46, 47, 48, 49, 50, 51, 52, 53, 54, 56, 57, 59, 60, 61, 63, 64, 65, 66]
+;;; Computation done removing the duplicated columns: [3, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 26]
 ;;; -> The dimensions of the matrix really used are 4 X 7
 ;;; Computation stopped at level 4
 ;;;
