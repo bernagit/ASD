@@ -129,7 +129,7 @@ class Solver:
             
             if self.option.debug:
                 print(f'Number of combinations: {num_of_combinations}')
-            if num_of_combinations > 50000:
+            if num_of_combinations > 1000000:
                 print(f'Warning: number of combinations is too high ({num_of_combinations}), skipping this step.')
                 self.stopped = True
 
@@ -138,12 +138,20 @@ class Solver:
 
                 # remove the already present solution from the combinations
                 combinations.remove(tuple(original_indexes))
-
+                
+                start = time.time()
+                i = 0
                 for combination in combinations:
+                    if i % 1000 == 0:
+                        elapsed_time = time.time() - start
+                        if elapsed_time > self.max_time:
+                            print(f'Execution time exceeded {self.max_time} seconds, stopping computation.')
+                            self.stopped = True
+                            return
                     new_row = np.zeros(len(solution[0]), dtype=bool)
-                    for i in range(len(combination)):
-                        new_row[combination[i]] = True
+                    new_row[list(combination)] = True
                     solution = np.vstack([solution, new_row])
+                    i += 1
 
                 if self.option.debug:
                     print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
