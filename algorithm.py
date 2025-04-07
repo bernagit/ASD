@@ -123,19 +123,30 @@ class Solver:
                     arr.append([idx])
 
             from itertools import product
-            combinations = list(product(*arr))
-
-            # remove the already present solution from the combinations
-            combinations.remove(tuple(original_indexes))
-
-            for combination in combinations:
-                new_row = np.zeros(len(solution[0]), dtype=bool)
-                for i in range(len(combination)):
-                    new_row[combination[i]] = True
-                solution = np.vstack([solution, new_row])
-        
+            num_of_combinations = 1
+            for element in arr:
+                num_of_combinations *= len(element)
+            
             if self.option.debug:
-                print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
+                print(f'Number of combinations: {num_of_combinations}')
+            if num_of_combinations > 50000:
+                print(f'Warning: number of combinations is too high ({num_of_combinations}), skipping this step.')
+                self.stopped = True
+
+            if not self.stopped:
+                combinations = list(product(*arr))
+
+                # remove the already present solution from the combinations
+                combinations.remove(tuple(original_indexes))
+
+                for combination in combinations:
+                    new_row = np.zeros(len(solution[0]), dtype=bool)
+                    for i in range(len(combination)):
+                        new_row[combination[i]] = True
+                    solution = np.vstack([solution, new_row])
+
+                if self.option.debug:
+                    print(f'Added {len(combinations)} new solutions by combining the duplicated columns')
 
         if self.option.delete_zeros:
             for i in self.deleted_columns_index[::-1]:
@@ -167,7 +178,7 @@ class Solver:
             self.permuted_column_indices = permuted_indices  # Salva gli indici permutati
             if self.option.debug:
                 print(f"Colonne permutate in base al numero di '1': {permuted_indices}")
-        elif self.option.per:
+        elif self.option.permute_columns_asc:
             # Permutazione delle colonne in base al numero di '0'
             column_sums = np.sum(self.matrix, axis=0)
             permuted_indices = np.argsort(column_sums)  # Ordina in ordine crescente
@@ -292,6 +303,10 @@ class Solver:
                             return
                         
                     right_solution = self.add_deleted_columns_to_solution(h.value)
+                    
+                    if self.stopped:
+                        return
+
                     self.solutions.extend(right_solution)
                     self.current.pop(i)
                     i -= 1

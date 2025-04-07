@@ -36,25 +36,6 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-class Result():
-    
-    result_path = './results'
-    
-    def __init__(self, filename, time, mhs):
-        self.filename = filename
-        self.time = time
-        self.mhs = mhs
-    
-    def save(self):
-        if not os.path.exists(self.result_path):
-            os.makedirs(self.result_path)
-
-        with open(f"{self.result_path}/{self.filename}.result", 'w') as f:
-            f.write(f"Time: {time}")
-            for r in self.mhs:
-                f.write(r)
-
-
 def get_benchmark_files():
     benchmarks = []
     pwd = os.getcwd()
@@ -112,7 +93,6 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
     for x in solutions:
         solution_line = f'{' '.join(['1' if y == True else '0' for y in x])} -\n'
         output_file.write(solution_line)
-
 
 def handle_menu(args):
     available_commands = commands.keys()
@@ -188,22 +168,24 @@ def main():
             for folder, file_name in files:
                 executions.append(os.path.join(cwd, folder, file_name))
 
-        selected_files = input('Insert the names of the files you want to run (with the respective folder): ')
-        if selected_files:
-            if os.path.exists(selected_files):
-                executions.append(os.path.join(cwd, selected_files))
+        else: 
+            selected_files = input('Insert the names of the files you want to run (with the respective folder): ')
+            if selected_files:
+                if os.path.exists(selected_files):
+                    executions.append(os.path.join(cwd, selected_files))
+                else:
+                    print(f'File {selected_files} not found!')
+                    return
             else:
-                print(f'File {selected_files} not found!')
+                print('No files selected!')
                 return
-        else:
-            print('No files selected!')
-            return
         
     for file_name in executions:
         instance_matrix = read_file(file_name)
         solver = Solver(instance_matrix, file_name, opt)
 
         solver.calculate_solutions()
+        
         elapsed = time.time() - solver.start_time
 
         write_solutions(file_name, solver.solutions, [elapsed, solver.get_used_memory()])
