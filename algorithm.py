@@ -242,13 +242,14 @@ class Solver:
         self.permute_columns()
         self.permute_rows()
 
-    def calculate_solutions(self, firstSolution=False):
+    def calculate_solutions(self, firstSolution=False, preprocess=True):
         tracemalloc.start()
         start = time.time()
 
+        if preprocess:
+            self.preprocess_matrix()
+        
         self.start_time = time.time()
-
-        self.preprocess_matrix()
 
         h0 = Node([False] * len(self.matrix[0]))
         h0.update_level()
