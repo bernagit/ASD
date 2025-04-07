@@ -70,7 +70,14 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
     min_card = np.sum(solutions[0])
     max_card = np.sum(solutions[-1])
     found_solutions = len(solutions)
+    
+    duplicated_columns = []
+    for _, item in solver.duplication_list.items():
+        duplicated_columns += item
+    duplicated_columns.sort()
+
     removed_columns_string = f'[{', '.join(str(i + 1) for i in solver.deleted_columns_index[::-1])}]'
+    duplicated_columns_string = f'[{', '.join(str(i + 1) for i in duplicated_columns)}]'
 
     output_file = open(f'results/{input_filename}.mhs', 'w+')
 
@@ -80,9 +87,14 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
     output_file.write(f'{COMMENT} Maximum cardinality: {max_card}\n')
     output_file.write(f'{COMMENT} Elapsed time: {resources_info[0]}s\n')
     output_file.write(f'{COMMENT} Memory used: {(resources_info[1][1]) / (1024)} KB\n')
+
     if len(solver.deleted_columns_index) > 0:
-        output_file.write(f'{COMMENT} Computation done removing the columns: {removed_columns_string}\n')
+        output_file.write(f'{COMMENT} Computation done removing the zero columns: {removed_columns_string}\n')
+    if len(duplicated_columns) > 0:
+        output_file.write(f'{COMMENT} Computation done removing the duplicated columns: {duplicated_columns_string}\n')
+    if len(solver.deleted_columns_index) > 0 or len(duplicated_columns) > 0:
         output_file.write(f'{COMMENT} -> The dimensions of the matrix really used are {solver.matrix.shape[0]} X {solver.matrix.shape[1]}\n')
+
 
     output_file.write(f'{COMMENT} Computation stopped at level {solver.current_level}\n')
     if interruped:
