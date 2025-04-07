@@ -114,10 +114,10 @@ class Solver:
             from itertools import product
             combinations = list(product(*arr))
 
+            # remove the already present solution from the combinations
+            combinations.remove(tuple(original_indexes))
+
             for combination in combinations:
-                # skip the already present solution
-                if list(combination) == original_indexes:
-                    continue
                 new_row = np.zeros(len(solution[0]), dtype=bool)
                 for i in range(len(combination)):
                     new_row[combination[i]] = True
