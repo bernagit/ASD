@@ -2,8 +2,13 @@
 ;;; Number of MHS found: 42
 ;;; Minimum cardinality: 3
 ;;; Maximum cardinality: 4
+<<<<<<< HEAD:results/matrix 21
 ;;; Elapsed time: 767.2212266921997s
 ;;; Memory used: 2273.66796875 KB
+=======
+;;; Elapsed time: 345.89495754241943s
+;;; Memory used: 2273.73046875 KB
+>>>>>>> 908f0d6880a0639360c6727035e9d277bad610ac:results/74L85021.mhs
 ;;; Computation done removing the columns: [2, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 18, 19, 20, 25, 27, 30]
 ;;; -> The dimensions of the matrix really used are 4 X 15
 ;;; Computation stopped at level 15
@@ -14,6 +19,19 @@
 ;;; Level 2: 105 hypoteses
 ;;; Level 3: 455 hypoteses
 ;;; Level 4: 1257 hypoteses
+<<<<<<< HEAD:results/matrix 21
+=======
+;;; Level 5: 2417 hypoteses
+;;; Level 6: 3535 hypoteses
+;;; Level 7: 3928 hypoteses
+;;; Level 8: 3342 hypoteses
+;;; Level 9: 2168 hypoteses
+;;; Level 10: 1056 hypoteses
+;;; Level 11: 375 hypoteses
+;;; Level 12: 92 hypoteses
+;;; Level 13: 14 hypoteses
+;;; Level 14: 1 hypotesis
+>>>>>>> 908f0d6880a0639360c6727035e9d277bad610ac:results/74L85021.mhs
 ;;;
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1 0 0 -
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 0 -
