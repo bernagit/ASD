@@ -14,6 +14,10 @@ commands = {
     '-dz': ['Delete the columns with all zeros'],
     '-dd': ['Delete the duplicated columns'],
     '-m': ['Set the maximum time to run the algorithm'],
+    '-pr': ['Permute the rows randomly'],
+    '-pcr': ['Permute the columns randomly'],
+    '-pcd': ['Permute the columns pushing the zeros to the end'],
+    '-pcc': ['Permute the columns pushing the zeros to the beginning'],
 }
 
 BANCHMARK_FOLDERS = ['benchmarks1', 'benchmarks2']
@@ -95,7 +99,6 @@ def write_solutions(input_filename, solutions, resources_info, interruped = Fals
     if len(solver.deleted_columns_index) > 0 or len(duplicated_columns) > 0:
         output_file.write(f'{COMMENT} -> The dimensions of the matrix really used are {solver.matrix.shape[0]} X {solver.matrix.shape[1]}\n')
 
-
     output_file.write(f'{COMMENT} Computation stopped at level {solver.current_level}\n')
     if interruped:
         output_file.write(f'{COMMENT} The computation has been stopped by the user before terminating\n')
@@ -116,6 +119,10 @@ def handle_menu(args):
     debug = False
     delete_zeros = False
     delete_duplicates = False
+    permute_rows = False
+    permute_columns = False
+    permute_columns_desc = False
+    permute_columns_asc = False
     max_time = float('inf')
 
     file_names = []
@@ -132,6 +139,14 @@ def handle_menu(args):
                 delete_zeros = True
             elif arg == '-dd':
                 delete_duplicates = True
+            elif arg == '-pr':
+                permute_rows = True
+            elif arg == '-pcr':
+                permute_columns = True
+            elif arg == '-pcd':
+                permute_columns_desc = True
+            elif arg == '-pcc':
+                permute_columns_asc = True
             elif arg == '-m':
                 max_time = int(args[args.index(arg) + 1])
         else:
@@ -141,7 +156,14 @@ def handle_menu(args):
     if str(max_time) in file_names:
         file_names.remove(str(max_time))
     
-    return Option(debug, delete_zeros, delete_duplicates, max_time), file_names
+    return Option(debug,
+                  delete_zeros,
+                  delete_duplicates,
+                  max_time,
+                  permute_rows,
+                  permute_columns,
+                  permute_columns_desc,
+                  permute_columns_asc), file_names
 
 def main():
     global solver
