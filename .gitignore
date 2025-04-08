@@ -5,3 +5,8 @@ __pycache__
 performance_comparison.csv
 .gitignore
 permutation_results.csv
+average_memories.png
+average_times_second.png
+average_times_first.png
+completed_cases.png
+solutions_found.png

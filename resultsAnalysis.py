@@ -7,7 +7,7 @@ from file import read_file
 
 BANCHMARK_FOLDER = './benchmarks1'
 TIME_LIMIT = 120  # Limite di tempo in secondi
-MAX_COLUMNS = 18  # Numero massimo di colonne per eseguire il solver
+MAX_COLUMNS = 16  # Numero massimo di colonne per eseguire il solver
 CSV_FILE = "performance_comparison.csv"
 
 def analyze_benchmarks():
@@ -60,7 +60,7 @@ def analyze_benchmarks():
         if columns_after_dz <= MAX_COLUMNS:
             tracemalloc.start()  # Inizia il monitoraggio della memoria
             start_time = time.time()
-            solver_dz.calculate_solutions()
+            solver_dz.calculate_solutions(preprocess=False)
             elapsed_time_dz = time.time() - start_time
             current, peak = tracemalloc.get_traced_memory()  # Ottieni la memoria corrente e di picco
             memory_dz = peak / 1024  # Converti in KB
@@ -88,7 +88,7 @@ def analyze_benchmarks():
             print(f"numero colonne dopo dz e dd: {columns_after_dz_dd}")
             tracemalloc.start()  # Inizia il monitoraggio della memoria
             start_time = time.time()
-            solver_dz_dd.calculate_solutions()
+            solver_dz_dd.calculate_solutions(preprocess=False)
             elapsed_time_dz_dd = time.time() - start_time
             current, peak = tracemalloc.get_traced_memory()  # Ottieni la memoria corrente e di picco
             memory_dz_dd = peak / 1024  # Converti in KB
@@ -97,7 +97,7 @@ def analyze_benchmarks():
         else:
             termination_status_dz_dd = "TOO LARGE"
             print(f"[INFO] Il file {filename} ha {columns_after_dz_dd} colonne. Caso dz e dd non eseguito.")
-    
+
         # Salva i risultati nel CSV
         with open(CSV_FILE, "a", newline="") as csvfile:
             csvwriter = csv.DictWriter(csvfile, fieldnames=fieldnames)

@@ -7,7 +7,7 @@ from file import read_file
 
 BANCHMARK_FOLDER = './benchmarks1'
 TIME_LIMIT = 120  # Limite di tempo in secondi
-MAX_COLUMNS = 18  # Numero massimo di colonne dopo parse_matrix
+MAX_COLUMNS = 16  # Numero massimo di colonne dopo parse_matrix
 CSV_FILE = "permutation_results.csv"
 
 def test_permutations():
@@ -48,19 +48,16 @@ def test_permutations():
 
         results = {"filename": filename}
 
-        # Configurazione base per il solver
-        option = Option(debug=True, delete_zeros=True, delete_duplicates=True, max_time=TIME_LIMIT)
-
         # Funzione per eseguire un caso specifico
-        def execute_case(solver):
-            #solver.parse_matrix()  # Esegui parse_matrix
-            print(f"Numero di colonne dopo parse_matrix: {solver.matrix.shape[1]}")
+        def execute_case(option):
+            solver = Solver(instance_matrix.copy(), filename, option)
+            solver.parse_matrix()  # Esegui parse_matrix
             if solver.matrix.shape[1] > MAX_COLUMNS:
                 print(f"[SKIPPED] Il file {filename} supera il limite di colonne dopo permutazione. Troppo grande.")
                 return None, None
             tracemalloc.start()
             start_time = time.time()
-            solver.calculate_solutions()
+            solver.calculate_solutions(preprocess=False)
             elapsed_time = time.time() - start_time
             current, peak = tracemalloc.get_traced_memory()
             tracemalloc.stop()
@@ -69,35 +66,20 @@ def test_permutations():
             return elapsed_time, peak / 1024  # Converti in KB
 
         # Caso 1: Nessuna permutazione
-        matNorm = read_file(filepath)
-
-        solver_no_permutation = Solver(matNorm, filename, option)
-        solver_no_permutation.parse_matrix()
-        results["time_no_permutation"], results["memory_no_permutation"] = execute_case(solver_no_permutation)
+        option_no_permutation = Option(debug=True, delete_zeros=True, delete_duplicates=True, max_time=TIME_LIMIT)
+        results["time_no_permutation"], results["memory_no_permutation"] = execute_case(option_no_permutation)
 
         # Caso 2: Permutazione casuale
-        matrnd = read_file(filepath)
-
-        solver_random_permutation = Solver(matrnd, filename, option)
-        solver_random_permutation.parse_matrix()
-        solver_random_permutation.permute_columns(randomize=True)
-        results["time_random_permutation"], results["memory_random_permutation"] = execute_case(solver_random_permutation)
+        option_random_permutation = Option(debug=True, delete_zeros=True, delete_duplicates=True, max_time=TIME_LIMIT, permute_columns=True)
+        results["time_random_permutation"], results["memory_random_permutation"] = execute_case(option_random_permutation)
 
         # Caso 3: Permutazione decrescente
-        matdec = read_file(filepath)
-
-        solver_decrescent_permutation = Solver(matdec, filename, option)
-        solver_decrescent_permutation.parse_matrix()
-        solver_decrescent_permutation.permute_columns(randomize=False, decrescent=True)
-        results["time_decrescent_permutation"], results["memory_decrescent_permutation"] = execute_case(solver_decrescent_permutation)
+        option_decrescent_permutation = Option(debug=True, delete_zeros=True, delete_duplicates=True, max_time=TIME_LIMIT, permute_columns_desc=True)
+        results["time_decrescent_permutation"], results["memory_decrescent_permutation"] = execute_case(option_decrescent_permutation)
 
         # Caso 4: Permutazione crescente
-        matcre = read_file(filepath)
-
-        solver_crescent_permutation = Solver(matcre, filename, option)
-        solver_crescent_permutation.parse_matrix()
-        solver_crescent_permutation.permute_columns(randomize=False, decrescent=False)
-        results["time_crescent_permutation"], results["memory_crescent_permutation"] = execute_case(solver_crescent_permutation)
+        option_crescent_permutation = Option(debug=True, delete_zeros=True, delete_duplicates=True, max_time=TIME_LIMIT, permute_columns_asc=True)
+        results["time_crescent_permutation"], results["memory_crescent_permutation"] = execute_case(option_crescent_permutation)
 
         # Salva i risultati nel CSV
         with open(CSV_FILE, "a", newline="") as csvfile:
