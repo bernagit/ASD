@@ -203,9 +203,14 @@ class Solver:
     def get_solutions_without_permutation(self):
         right_solutions = []
         for sol in self.solutions:
-            right_solution = np.zeros_like(sol).reshape(1, len(sol))
+            # remove the deleted columns from the solution
+            sol = np.delete(sol, self.deleted_columns_index)
+            right_solution = np.zeros_like(sol, dtype=bool).reshape(1, len(sol))
             right_solution[:, self.permuted_column_indices] = sol
             right_solution = right_solution.reshape(-1)
+            # add the deleted columns back to the solution
+            for i in self.deleted_columns_index[::-1]:
+                right_solution = np.insert(right_solution, i, [False], axis=0)
             right_solutions.append(right_solution)
 
         return right_solutions

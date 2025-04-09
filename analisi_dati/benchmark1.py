@@ -40,9 +40,8 @@ def main():
     cont = 0
     # percentages = []
     for file in files[::-1]:
-        instance_matrix = read_file('benchmarks1', file)
-        solver = Solver(instance_matrix, file, debug=False)
-        solver.parse_matrix()
+        instance_matrix = read_file('benchmarks1/' + file)
+        solver = Solver(instance_matrix, file)
 
         if solver.matrix.shape[1] < 15:
             solver.calculate_solutions()
