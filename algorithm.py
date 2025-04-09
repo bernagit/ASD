@@ -22,7 +22,7 @@ class Option():
         self.permute_columns_desc = permute_columns_desc
         self.permute_columns_asc = permute_columns_asc
 class Solver:
-    def __init__(self, matrix, instance_filename, option: Option):
+    def __init__(self, matrix, instance_filename, option: Option=Option()):
         self.matrix = matrix
         self.instance_filename = instance_filename
         self.current_level = 0
