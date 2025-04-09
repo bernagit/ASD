@@ -4,16 +4,16 @@ import numpy as np
 
 def main():
     instance_filename = '74L85.002.matrix'
-    instance_matrix = read_file('benchmarks1', instance_filename)
+    instance_matrix = read_file('benchmarks1/' + instance_filename)
 
-    solver = Solver(instance_matrix, instance_filename, debug=False)
+    solver = Solver(instance_matrix, instance_filename)
     solver.calculate_solutions()
     first_solutions = solver.solutions
     first_solutions_binary = [''.join(['1' if x else '0' for x in first_solution]) for first_solution  in first_solutions]
     first_solutions_binary.sort()
     first_solutions_time = solver.execution_time
 
-    solver = Solver(instance_matrix, instance_filename, debug=False)
+    solver = Solver(instance_matrix, instance_filename)
     solver.permute_rows()
     solver.calculate_solutions()
     second_solutions = solver.solutions
@@ -45,7 +45,7 @@ def main():
     print()
     print()
 
-    solver = Solver(instance_matrix, instance_filename, debug=False)
+    solver = Solver(instance_matrix, instance_filename)
     solver.permute_columns()
     solver.calculate_solutions()
     third_solutions = solver.get_solutions_without_permutation()
@@ -78,7 +78,7 @@ def main():
     print()
     print()
 
-    solver = Solver(instance_matrix, instance_filename, debug=False)
+    solver = Solver(instance_matrix, instance_filename)
     solver.permute_columns()
     solver.permute_rows()
     solver.calculate_solutions()
