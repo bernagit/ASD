@@ -8,7 +8,7 @@ class Option():
                  debug=False,
                  delete_zeros=False,
                  delete_duplicates=False,
-                 max_time=False,
+                 max_time=float('inf'),
                  permute_rows=False,
                  permute_columns=False,
                  permute_columns_desc=False,

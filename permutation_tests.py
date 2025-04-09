@@ -1,20 +1,20 @@
 from algorithm import Solver
 from file import read_file
 import numpy as np
+from algorithm import Option
 
 def main():
     instance_filename = '74L85.002.matrix'
     instance_matrix = read_file('benchmarks1/' + instance_filename)
 
-    solver = Solver(instance_matrix, instance_filename)
+    solver = solver = Solver(instance_matrix, instance_filename, option=Option(delete_zeros=True))
     solver.calculate_solutions()
     first_solutions = solver.solutions
     first_solutions_binary = [''.join(['1' if x else '0' for x in first_solution]) for first_solution  in first_solutions]
     first_solutions_binary.sort()
     first_solutions_time = solver.execution_time
 
-    solver = Solver(instance_matrix, instance_filename)
-    solver.permute_rows()
+    solver = solver = Solver(instance_matrix, instance_filename, option=Option(delete_zeros=True, permute_rows=True))
     solver.calculate_solutions()
     second_solutions = solver.solutions
     second_solutions_binary = [''.join(['1' if x else '0' for x in second_solution]) for second_solution  in second_solutions]
@@ -45,8 +45,7 @@ def main():
     print()
     print()
 
-    solver = Solver(instance_matrix, instance_filename)
-    solver.permute_columns()
+    solver = solver = Solver(instance_matrix, instance_filename, option=Option(delete_zeros=True, permute_columns=True))
     solver.calculate_solutions()
     third_solutions = solver.get_solutions_without_permutation()
     third_solutions_binary = [''.join(['1' if x else '0' for x in third_solution]) for third_solution  in third_solutions]
@@ -78,9 +77,7 @@ def main():
     print()
     print()
 
-    solver = Solver(instance_matrix, instance_filename)
-    solver.permute_columns()
-    solver.permute_rows()
+    solver = solver = Solver(instance_matrix, instance_filename, option=Option(delete_zeros=True, permute_rows=True, permute_columns=True))
     solver.calculate_solutions()
     fourth_solutions = solver.get_solutions_without_permutation()
     fourth_solutions_binary = [''.join(['1' if x else '0' for x in fourth_solution]) for fourth_solution  in fourth_solutions]
