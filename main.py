@@ -24,10 +24,20 @@ BANCHMARK_FOLDERS = ['benchmarks1', 'benchmarks2']
 
 solver: Solver | None = None
 
+cleanup_in_progress = False
+
 def signal_handler(sig, frame):
-    """Handle Ctrl+C (SIGINT) signal."""
+
+    global cleanup_in_progress
+    if cleanup_in_progress:
+        print("Force quitting! Second Ctrl+C detected!")
+        sys.exit(1)
+
     print("\nCtrl+C detected! Cleaning up...")
     print("Writing solutions to file...")
+
+    
+    cleanup_in_progress = True
     
     solver.stopped = True
     elapsed = time.time() - solver.start_time
